@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RescueSim USAR Command Center</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>RescueSim <span>USAR Command Center</span></h1>
+    <div class="sub">Quadruped rover + micro-drone &middot; Nebius Token Factory &middot; NVIDIA Nemotron &middot; Tavily</div>
+  </div>
+  <div class="pills">
+    <span class="pill" id="pill-nebius">Nebius: ...</span>
+    <span class="pill" id="pill-tavily">Tavily: ...</span>
+    <span class="pill" id="pill-haz">Live hazards: off</span>
+    <span class="pill" id="pill-conn">WS: connecting</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="t1">🌐 Live 3D USAR Simulation</button>
+  <button class="tab" data-tab="t2">🌍 Tavily Disaster Intelligence</button>
+  <button class="tab" data-tab="t3">☁️ Nebius Serverless Benchmark</button>
+  <button class="tab" data-tab="t4">🧠 Cosmos &amp; Nemotron Inspector</button>
+</nav>
+
+<!-- TAB 1 -->
+<section id="t1" class="panel active">
+  <div class="controls">
+    <label>Policy
+      <select id="c-policy">
+        <option value="adaptive">Nemotron + Cosmos Adaptive</option>
+        <option value="static">Static Conservative A*</option>
+        <option value="greedy">Baseline Greedy</option>
+      </select>
+    </label>
+    <label>Seed <input id="c-seed" type="number" value="3" min="0" max="99999"></label>
+    <label>Survivors <input id="c-surv" type="number" value="5" min="1" max="8"></label>
+    <label class="chk"><input id="use-live" type="checkbox" disabled> Use Tavily hazards</label>
+    <button id="b-start" class="primary">▶ Start mission</button>
+    <button id="b-pause">⏸ Pause</button>
+    <button id="b-stop">■ Stop</button>
+    <label>Speed
+      <select id="c-speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select>
+    </label>
+    <label>Aftershock M <input id="c-mag" type="range" min="3" max="7" step="0.1" value="5.5"><b id="c-mag-v">5.5</b></label>
+    <button id="b-quake" class="danger">⚡ Trigger aftershock</button>
+    <label class="chk"><input id="c-truth" type="checkbox" checked> Ground truth</label>
+  </div>
+
+  <div class="grid1">
+    <div class="card viewport"><div id="plot"></div></div>
+    <div class="side">
+      <div class="card">
+        <h3>Mission telemetry <small id="k-clock">t=0.0s step 0</small></h3>
+        <div class="kpis">
+          <div class="kpi"><span>Located</span><b id="k-located">0/0</b></div>
+          <div class="kpi"><span>Rescued</span><b id="k-rescued">0/0</b></div>
+          <div class="kpi"><span>Risk exposure</span><b id="k-risk">0.0</b></div>
+          <div class="kpi"><span>Map explored</span><b id="k-explored">0%</b></div>
+          <div class="kpi"><span>Aftershocks</span><b id="k-aft">0</b></div>
+          <div class="kpi"><span>Reflex calls</span><b id="k-reflex">0</b></div>
+        </div>
+        <div class="bat"><span>Rover battery</span><div class="bar"><i id="bat-r"></i></div><b id="bat-r-v">100%</b></div>
+        <div class="bat"><span>Drone battery</span><div class="bar"><i id="bat-d"></i></div><b id="bat-d-v">100%</b></div>
+      </div>
+      <div class="card">
+        <h3>Active A* policy weights</h3>
+        <div class="weights">
+          <div><span>&alpha; slope</span><b id="w-alpha">-</b></div>
+          <div><span>&beta; collapse</span><b id="w-beta">-</b></div>
+          <div><span>&gamma; smoke</span><b id="w-gamma">-</b></div>
+        </div>
+        <div id="plan-box" class="small muted">No plan yet.</div>
+      </div>
+      <div class="card grow">
+        <h3>Multi-agent reasoning &amp; radio log</h3>
+        <div id="log" class="log"></div>
+      </div>
+      <div class="card hidden" id="final-card">
+        <h3>Mission result</h3>
+        <div id="final-box" class="small"></div>
+      </div>
+    </div>
+  </div>
+  <div class="legend small muted">
+    Terrain colour = structural instability (green stable → red collapse-prone) · grey haze = smoke ·
+    cyan = micro-drone path + LiDAR ring · orange = rover path · red pulsing = confirmed survivor beacon ·
+    amber = uncertain contact · grey = rejected decoy · green = rescued
+  </div>
+</section>
+
+<!-- TAB 2 -->
+<section id="t2" class="panel">
+  <div class="card">
+    <h3>Live disaster intelligence → physics coupling</h3>
+    <div class="controls">
+      <label class="wide">Disaster zone / event <input id="h-loc" type="text" placeholder="e.g. Tokyo earthquake structural collapse weather"></label>
+      <label class="wide">Custom query (optional) <input id="h-query" type="text" placeholder="overrides the default Tavily query"></label>
+      <button id="h-fetch" class="primary">🔎 Fetch live intelligence</button>
+      <button id="h-clear">Clear active hazards</button>
+    </div>
+    <div id="h-status" class="small muted">Runs a runtime Tavily search; snippets are converted to PhysicalHazardModifiers (Nemotron when online, regex extraction otherwise).</div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Extracted physical hazard modifiers</h3><div id="h-mods"></div></div>
+    <div class="card"><h3>Physics engine before → after</h3><div id="h-phys"></div></div>
+  </div>
+  <div class="card"><h3>Retrieved sources</h3><div id="h-hits" class="hits"></div></div>
+</section>
+
+<!-- TAB 3 -->
+<section id="t3" class="panel">
+  <div class="card">
+    <h3>Policy benchmark (Monte Carlo, paired seeds)</h3>
+    <div class="controls">
+      <button id="bm-load" class="primary">Load Nebius Serverless Job artifact (100 episodes)</button>
+      <label>UI run episodes
+        <select id="bm-eps"><option>6</option><option selected>10</option><option>20</option></select>
+      </label>
+      <label class="chk"><input id="bm-live" type="checkbox"> Use live LLM calls</label>
+      <button id="bm-run">▶ Run batch here</button>
+      <div class="progress"><i id="bm-prog"></i></div>
+      <span id="bm-status" class="small muted"></span>
+    </div>
+    <div id="bm-meta" class="small muted"></div>
+  </div>
+  <div class="grid4">
+    <div class="card"><div id="ch-rescue"></div></div>
+    <div class="card"><div id="ch-loss"></div></div>
+    <div class="card"><div id="ch-ttfs"></div></div>
+    <div class="card"><div id="ch-energy"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Adaptive policy vs baselines</h3><div id="bm-cmp"></div></div>
+    <div class="card"><h3>Paired significance (Wilcoxon, per-seed)</h3><div id="bm-tests"></div></div>
+  </div>
+</section>
+
+<!-- TAB 4 -->
+<section id="t4" class="panel">
+  <div class="card">
+    <h3>Model routing &amp; connectivity</h3>
+    <div class="controls">
+      <button id="i-refresh">↻ Refresh</button>
+      <button id="i-models">Check Nebius model catalog</button>
+      <button id="i-probe">Probe reflex agent (fire vs 36.8 °C survivor)</button>
+    </div>
+    <div id="i-models-box"></div>
+    <div id="i-probe-box"></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Dual-model architecture</h3><div id="i-arch"></div></div>
+    <div class="card"><h3>Latency telemetry (ms / call)</h3><div id="i-lat"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Synthetic domain randomization (200 draws)</h3><div id="i-dr"></div></div>
+    <div class="card"><h3>Hazard-conditioning implementation</h3><div id="i-cosmos"></div></div>
+  </div>
+  <div class="card"><h3>Recent Nebius Token Factory payloads <small id="i-count"></small></h3><div id="i-payloads"></div></div>
+</section>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

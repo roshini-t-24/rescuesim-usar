@@ -1,0 +1,16 @@
+.venv
+__pycache__
+*.pyc
+.env
+.git
+.pytest_cache
+results/*.log
+results/smoke.json
+results/sweep.json
+*.py[cod]
+patch*.py
+diag_*.py
+dump_*.py
+sweep_loss.py
+list_models.py
+api_dump.txt

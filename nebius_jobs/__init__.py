@@ -1,0 +1,1 @@
+"""Nebius Serverless Jobs entry points for RescueSim."""

@@ -1,0 +1,1 @@
+"""RescueSim simulator package: world, sensors and robot kinematics."""

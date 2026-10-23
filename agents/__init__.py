@@ -1,0 +1,1 @@
+"""RescueSim agents: Tavily hazard intel, Nemotron orchestrator, mission coordinator."""

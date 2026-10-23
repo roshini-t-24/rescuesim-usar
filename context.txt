@@ -1,0 +1,31 @@
+RESCUESIM-USAR | Nebius x NVIDIA Hackathon 2026, Physical AI track | USAR robot simulation (rover + drone) in a collapsed building
+RULES: build file by file; reply with only code, terminal commands and their outputs; dashboard = FastAPI + custom HTML/JS (NOT Streamlit)
+== 1. TECH STACK ==
+Python 3.12 (3.13 breaks scipy wheels on Windows); numpy, scipy, pydantic v2, openai client (Nebius Token Factory https://api.studio.nebius.ai/v1/), tavily-python, FastAPI+uvicorn, Plotly.js (CDN), pytest, PyYAML, python-dotenv
+Storage: none (in-memory sim; batch results saved as JSON). No DB, no PDF/OCR. NEBIUS_API_KEY/TAVILY_API_KEY optional: every agent has a deterministic offline fallback
+== 2. FILES (DONE) ==
+requirements.txt - relaxed numpy/scipy/pydantic pins plus openai, tavily-python, fastapi, uvicorn, pytest
+config/settings.py - env keys, Nebius model IDs, world/rover/drone/sensor constants, PolicyWeights presets, hazard bounds, offline hazard profile
+simulator/disaster_world.py - DisasterWorld: elevation, instability, 3D smoke, ceiling, pillars, survivors, heat decoys, wind, trigger_aftershock, apply_hazard_modifiers, snapshot
+simulator/sensors.py - SensorSuite: 36-ray LiDAR (Beer-Lambert), thermal SNR, acoustic TDOA array, triangulate_bearings
+simulator/robot_kinematics.py - SharedMap, risk-aware A*, QuadrupedRover (A*+DWA), MicroDrone (3D potential field), collapse-loss hazard model
+agents/tavily_hazard_intel.py - TavilyHazardIntel.fetch(): search, regex/LLM extraction to PhysicalHazardModifiers, apply_to_world before/after
+agents/nemotron_orchestrator.py - NemotronOrchestrator: planner (A* weights, task order) + reflex classifier, heuristic fallback, call log
+agents/mission_coordinator.py - MissionCoordinator Sense->Plan->Act, policies greedy|static|adaptive, run_mission(), sample_hazards() [DRAFT: runs end to end; seed 3 adaptive rescued only 1/5, needs tuning]
+config/__init__.py, simulator/__init__.py, agents/__init__.py - package markers
+== 3. DATA MODELS (field: type) ==
+PhysicalHazardModifiers (pydantic): seismic_aftershock_prob, wind_turbulence_mps, ambient_temp_c, smoke_toxicity_index, fema_safety_margin_m: float; source_urls: List[str]
+PolicyWeights: alpha_slope, beta_collapse, gamma_smoke: float | Survivor: sid:int; x,y,z,core_temp_c,acoustic_db,vital_decay_rate,vitality:float; located,rescued:bool
+HeatSource: hid:int, kind:str, x,y,z,temp_c:float, is_smoke_source:bool | ThermalDetection: range_m,bearing_rad,snr_db,est_temp_c,smoke_transmittance:float, est_position:Tuple[float,float,float]
+AcousticDetection: level_db,snr_db,bearing_rad,range_est_m:float, tapping:bool | Track: tid,n_obs,acoustic_hits:int; x,y,est_temp_c,snr_db,smoke_t,confidence:float; label:str; rescued:bool
+PlanDecision: weights:PolicyWeights, rover_target_order:List[int], drone_mode:str, drone_max_altitude_m:float, rationale,mode,trigger,model:str, latency_ms:float, error:Optional[str]
+ReflexVerdict: label:str, confidence:float, rationale:str, mode:str, model:str, latency_ms:float, error:Optional[str]
+HazardIntel: queries:List[str], mode,extraction:str, modifiers:PhysicalHazardModifiers, hits:List[SearchHit(title,url,content:str; score:float)], evidence:Dict[str,str], latency_ms:Dict[str,float], error:Optional[str]
+Episode metrics dict: policy:str, seed:int, time_s, rescue_rate, energy_wh, energy_wh_per_rescued, first_located_s, first_rescued_s, rover_risk_exposure:float; survivors_total/located/rescued/dead:int; rover_lost, drone_lost, robot_loss:bool
+== 4. STATUS ==
+COMPLETED: world physics, sensors, rover+drone kinematics, Tavily intel, Nemotron orchestrator (verified offline with fixture clients; live API calls untested)
+TO TUNE: mission_coordinator rescue rate (thermal est_temp reads cold through rubble, many survivors stay 'uncertain'); rover loss rate constant (COLLAPSE_LOSS_RATE_PER_S) before benchmarking
+MISSING: nebius_jobs/__init__.py, nebius_jobs/batch_policy_eval.py (100 episodes x 3 policies -> results/serverless_eval.json), nebius_jobs/job_spec.yaml
+MISSING: server.py (FastAPI: REST + WebSocket telemetry), static/index.html + app.js + style.css (4 tabs: 3D sim, Tavily intel, benchmark, Cosmos/Nemotron inspector)
+MISSING: tests/test_rescuesim.py, Dockerfile, .env.example, README.md (architecture, Nebius/NVIDIA setup), LICENSE (Apache 2.0)
+NOTE: Cosmos hazard synthesis is procedural (Gaussian/OU), no Cosmos weights called; NVIDIA model IDs are env-overridable, verify against Nebius catalog
