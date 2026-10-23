@@ -12,3 +12,4 @@ add_env.py
 sweep_loss.py
 list_models.py
 api_dump.txt
+!results/serverless_eval_live.json

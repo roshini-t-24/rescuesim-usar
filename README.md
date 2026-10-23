@@ -87,3 +87,14 @@ Adaptive vs greedy: +12.2 rescue points (Wilcoxon p = 0.0003), robot-loss reduct
 - Benchmark numbers use the offline heuristic planner. Re-run with `--live` for Nemotron-driven results.
 - The collapse-loss rate is a calibration constant. At 0.004 /s all three policies lose about 80% of episodes, so it cannot separate them.
 - Route choice halves one-way trip risk but cannot remove the exposure of reaching survivors in unstable rubble.
+## Live Nemotron run (exploratory)
+
+20 paired episodes per policy (seeds 1000-1019) with live Nebius calls: planner `nvidia/Nemotron-3-Ultra-550b-a55b`, reflex `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`. Source: `results/serverless_eval_live.json`.
+
+| Policy | Rescue rate | Robot loss | Mean time to first survivor | Wh per rescued |
+|---|---|---|---|---|
+| Greedy | 61.0% | 35.0% | 55.5 s | 64.7 |
+| Static A* | 52.0% | 45.0% | 62.4 s | 75.5 |
+| Adaptive (live) | 60.0% | 30.0% | 67.2 s | 72.7 |
+
+With only 20 episodes per policy the confidence intervals are wide, and the differences between policies are not statistically meaningful. The live planner mostly selected the maximum collapse weight, and one planner reply without JSON fell back to the heuristic. The 100-episode offline run above remains the primary result. Both reasoning models need roughly 1,200 to 2,500 completion tokens, so the token limits in `config/settings.py` were raised.
