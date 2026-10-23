@@ -31,9 +31,9 @@ REFLEX_MODEL_ID: str = os.environ.get(
     "NEBIUS_REFLEX_MODEL", "nvidia/Nemotron-Mini-4B-Instruct"
 )
 
-LLM_TIMEOUT_S: float = 20.0
-LLM_MAX_TOKENS_PLANNER: int = 700
-LLM_MAX_TOKENS_REFLEX: int = 200
+LLM_TIMEOUT_S: float = 45.0
+LLM_MAX_TOKENS_PLANNER: int = 2500
+LLM_MAX_TOKENS_REFLEX: int = 1200
 
 
 def get_nebius_key() -> str | None:
