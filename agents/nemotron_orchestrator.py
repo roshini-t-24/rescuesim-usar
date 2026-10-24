@@ -314,7 +314,7 @@ class NemotronOrchestrator:
         def extractor(prompt: str) -> Optional[str]:
             if not cfg.nebius_online() and self._client is None:
                 return None
-            text, _, _ = self._chat("planner", EXTRACTION_SYSTEM_PROMPT, prompt, 300, 0.0)
+            text, _, _ = self._chat("planner", EXTRACTION_SYSTEM_PROMPT, prompt, 6000, 0.0)
             return text
         return extractor
 
