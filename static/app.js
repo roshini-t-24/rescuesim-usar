@@ -370,3 +370,31 @@ $('#i-probe').onclick = async () => {
 loadHealth();
 api('/api/hazards/state').then(s => setHazPill(s.active)).catch(() => {});
 connect();
+
+/* --------------------------------------------------- TAB 1: policy comparison */
+const CMP_LABEL = {greedy: 'Baseline Greedy', static: 'Static Conservative A*', adaptive: 'Nemotron Adaptive'};
+$('#b-compare').onclick = async () => {
+  const btn = $('#b-compare');
+  btn.disabled = true;
+  btn.textContent = '⏳ Comparing...';
+  $('#cmp-card').classList.remove('hidden');
+  $('#cmp-box').textContent = 'Running all three policies on this seed (offline planner, about 15 s)...';
+  try {
+    const seed = +$('#c-seed').value;
+    const r = await post('/api/compare', {seed, survivors: +$('#c-surv').value, use_live_hazards: $('#use-live').checked});
+    $('#cmp-sub').textContent = `seed ${r.seed}${r.used_live_hazards ? ' · Tavily hazards' : ''}`;
+    const rows = ['greedy', 'static', 'adaptive'].map(p => {
+      const m = r.policies[p];
+      if (!m || m.error) return [esc(CMP_LABEL[p]), `<span class='err'>${esc(m ? m.error : 'no result')}</span>`, '', '', '', ''];
+      const lost = m.robot_loss ? [m.rover_lost ? 'rover (' + (m.rover_loss_reason || 'lost') + ')' : '', m.drone_lost ? 'drone' : ''].filter(Boolean).join(' + ') : 'none';
+      return [`<b>${esc(CMP_LABEL[p])}</b>`, `${m.survivors_rescued}/${m.survivors_total}`, esc(lost), fmt(m.first_located_s, 0) + ' s', fmt(m.time_s, 0) + ' s', fmt(m.energy_wh_per_rescued, 1)];
+    });
+    $('#cmp-box').innerHTML = table(rows, ['Policy', 'Rescued', 'Robots lost', 'First located', 'Mission time', 'Wh/rescued']) +
+      `<div class='muted small'>One seed is an anecdote, not a statistic: see Tab 3 for the 100-episode results.</div>`;
+  } catch (e) {
+    $('#cmp-box').innerHTML = `<span class='err'>${esc(e.message)}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚖ Compare policies (this seed)';
+  }
+};

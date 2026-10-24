@@ -49,6 +49,7 @@
     </label>
     <label>Aftershock M <input id="c-mag" type="range" min="3" max="7" step="0.1" value="5.5"><b id="c-mag-v">5.5</b></label>
     <button id="b-quake" class="danger">⚡ Trigger aftershock</button>
+    <button id="b-compare">⚖ Compare policies (this seed)</button>
     <label class="chk"><input id="c-truth" type="checkbox" checked> Ground truth</label>
   </div>
 
@@ -81,6 +82,7 @@
         <h3>Multi-agent reasoning &amp; radio log</h3>
         <div id="log" class="log"></div>
       </div>
+      <div class="card hidden" id="cmp-card"><h3>Policy comparison <small id="cmp-sub"></small></h3><div id="cmp-box" class="small"></div></div>
       <div class="card hidden" id="final-card">
         <h3>Mission result</h3>
         <div id="final-box" class="small"></div>

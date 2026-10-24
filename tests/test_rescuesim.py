@@ -368,3 +368,13 @@ def test_websocket_streams_frames():
         frame = ws.receive_json()
         assert frame["type"] == "frame" and frame["rover"] and frame["drone"]
         ws.send_json({"cmd": "stop"})
+
+def test_compare_endpoint_runs_three_policies():
+    from fastapi.testclient import TestClient
+    import server
+
+    res = TestClient(server.app).post("/api/compare", json={"seed": 3, "survivors": 3, "max_steps": 40}).json()
+    assert set(res["policies"]) == {"greedy", "static", "adaptive"}
+    for pol, m in res["policies"].items():
+        assert "error" not in m, m
+        assert m["policy"] == pol and m["survivors_total"] == 3

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import statistics
 import subprocess
 import sys
@@ -354,6 +355,53 @@ async def inspector_probe() -> Dict[str, Any]:
 # --------------------------------------------------------------------------- #
 # Live simulation WebSocket (Tab 1)
 # --------------------------------------------------------------------------- #
+class CompareRequest(BaseModel):
+    seed: int = 3
+    survivors: int = Field(5, ge=1, le=8)
+    use_live_hazards: bool = False
+    max_steps: Optional[int] = Field(None, ge=20, le=1200)
+
+
+COMPARE_LOCK = threading.Lock()
+
+
+def _run_policy_subprocess(policy: str, seed: int, survivors: int, hazards: Optional[Dict[str, Any]], max_steps: Optional[int]) -> Dict[str, Any]:
+    cmd = [sys.executable, "-m", "nebius_jobs.compare_seed", "--policy", policy, "--seed", str(seed), "--survivors", str(survivors)]
+    if hazards is not None:
+        cmd += ["--hazards-json", json.dumps(hazards)]
+    if max_steps:
+        cmd += ["--max-steps", str(max_steps)]
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    try:
+        proc = subprocess.run(cmd, cwd=str(ROOT), env=env, capture_output=True, text=True, encoding="utf-8", timeout=240)
+    except subprocess.TimeoutExpired:
+        return {"error": "timed out"}
+    for line in reversed(proc.stdout.splitlines()):
+        if line.startswith("RESULT_JSON:"):
+            return json.loads(line[len("RESULT_JSON:"):])
+    tail = (proc.stderr or proc.stdout or "").strip().splitlines()[-1:]
+    return {"error": tail[0][:200] if tail else f"exit code {proc.returncode}"}
+
+
+@app.post("/api/compare")
+async def compare_policies(req: CompareRequest) -> Dict[str, Any]:
+    if not COMPARE_LOCK.acquire(blocking=False):
+        raise HTTPException(409, "a comparison is already running")
+    try:
+        hazards = _pick_hazards(req.seed, True) if (req.use_live_hazards and HAZ["modifiers"]) else None
+        results = await asyncio.gather(*[
+            asyncio.to_thread(_run_policy_subprocess, p, req.seed, req.survivors, hazards, req.max_steps) for p in POLICIES
+        ])
+        return {
+            "seed": req.seed,
+            "used_live_hazards": hazards is not None,
+            "mode": "offline-heuristic",
+            "policies": dict(zip(POLICIES, results)),
+        }
+    finally:
+        COMPARE_LOCK.release()
+
+
 @app.websocket("/ws/sim")
 async def ws_sim(ws: WebSocket) -> None:
     await ws.accept()
