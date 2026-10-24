@@ -31,6 +31,19 @@ Tavily search ──► PhysicalHazardModifiers ──► DisasterWorld (wind, s
 | `nebius_jobs/` | Headless Monte Carlo evaluator + serverless job spec |
 | `server.py`, `static/` | FastAPI REST + WebSocket backend and the 4-tab dashboard |
 
+## How NVIDIA Nemotron, Nebius and Tavily are used
+
+| Component | Model / service | What it does in the app |
+|---|---|---|
+| Strategic planner | `nvidia/Nemotron-3-Ultra-550b-a55b` on Nebius Token Factory | At mission start, after every aftershock, when a new survivor candidate appears, and periodically: reads the hazard modifiers and a world summary and returns the A* risk weights (slope, collapse, smoke), the rover's target order and the drone mode. Outputs are clamped to bounds in `config/settings.py` |
+| Tactical reflex agent | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` on Nebius Token Factory | Classifies ambiguous thermal/acoustic contacts (survivor vs electrical or fire hotspot) before the rover commits to a route. Called only for mid-confidence contacts, at most 10 times per mission |
+| Hazard extraction | Nemotron Ultra on Token Factory | Reads the retrieved web snippets and extracts physical hazard parameters; regex rules fill any parameter the model finds no evidence for (the dashboard labels this `nemotron+heuristic`) |
+| Live hazard intelligence | Tavily Search API (runtime call) | Fetches current earthquake, structural and weather context for a user-chosen disaster zone. The extracted values change the physics engine: wind turbulence, ambient temperature and aftershock probability, which in turn change structural instability and the high-risk area (Tab 2 shows before/after) |
+
+Token Factory notes: the endpoint is OpenAI-compatible (`https://api.studio.nebius.ai/v1/`). Both Nemotron models are reasoning models that spend completion tokens on thinking before the answer, so low `max_tokens` values returned empty content; the limits were raised (planner 2,500, extractor 6,000, reflex 1,200).
+
+Not used: NVIDIA Cosmos model weights (hazard synthesis is procedural), Nebius Serverless Endpoints, and a deployed Nebius Serverless Job (see the jobs section). Every agent has a deterministic offline fallback, so the app also runs without keys.
+
 ## Run locally
 
 Python 3.12 recommended.
