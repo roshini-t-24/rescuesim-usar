@@ -54,14 +54,13 @@ With no keys the app runs fully offline (deterministic heuristic planner/reflex 
 
 Live API paths (planner, reflex, Tavily extraction) were exercised only with fixture clients; verify them with your keys before relying on them.
 
-## Nebius Serverless Jobs
+## Nebius Serverless Jobs (prepared, not deployed)
 
-```bash
-docker build -t rescuesim-usar .
-docker tag rescuesim-usar cr.eu-north1.nebius.cloud/<registry-id>/rescuesim-usar:latest
-docker push cr.eu-north1.nebius.cloud/<registry-id>/rescuesim-usar:latest
-nebius ai job create --help      # confirm flag names, then map nebius_jobs/job_spec.yaml onto them
-```
+The 100-episode benchmark is packaged as a container job: the `Dockerfile` runs `python -m nebius_jobs.batch_policy_eval`, and `nebius_jobs/deploy_job.sh` builds the image, pushes it to Nebius Container Registry and creates the job with the Nebius CLI (the CLI supports Ubuntu and macOS only). `nebius_jobs/job_spec.yaml` documents the settings.
+
+The job was **not deployed**: the Nebius account used for development had no billing set up, and the platform rejected registry creation with `PermissionDenied`. All benchmark numbers below come from running the same module locally. The Nebius integration that was exercised is Token Factory (live Nemotron planner and reflex calls, see the live run section).
+
+To deploy it yourself: set up billing, create a registry, then run `REGION=<region> REGISTRY_PATH=<registry-id-without-registry-prefix> ./nebius_jobs/deploy_job.sh` (add `DRY_RUN=1` first). The CPU platform and preset in the script are unverified defaults.
 
 Run the same benchmark locally:
 

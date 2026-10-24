@@ -1,28 +1,12 @@
-# Nebius AI Cloud Serverless Job: RescueSim 100-episode policy benchmark.
-# Keys map 1:1 to `nebius ai job create` flags (see commands below).
+﻿# Reference only: the Nebius CLI takes flags, not this file. See deploy_job.ps1 for the working command.
+# Platform/preset below are unverified placeholders: pick a CPU platform from
+# https://docs.nebius.com/compute/virtual-machines/types and confirm with --dry-run.
 name: rescuesim-policy-eval
-image: cr.eu-north1.nebius.cloud/YOUR_REGISTRY_ID/rescuesim-usar:latest
+image: cr.<region>.nebius.cloud/<registry-path>/rescuesim-usar:latest
 platform: cpu-d3
 preset: 8vcpu-32gb
-timeout: 1h
-disk_size: 50GiB
-
-command: ["python", "-m", "nebius_jobs.batch_policy_eval"]
-args:
-  - "--episodes"
-  - "100"
-  - "--workers"
-  - "8"
-  - "--output"
-  - "/results/serverless_eval.json"
-
-env:
-  PYTHONUNBUFFERED: "1"
-  PYTHONHASHSEED: "0"
-# Add --live to args and pass NEBIUS_API_KEY / TAVILY_API_KEY as job secrets
-# to benchmark with real Token Factory calls instead of the offline heuristic.
-
-volumes:
-  - source: rescuesim-results        # Nebius bucket or filesystem name
-    mount_path: /results
-    read_only: false
+timeout: 2h
+disk_size: 50Gi
+container_command: python
+args: -m nebius_jobs.batch_policy_eval --episodes 100 --workers 8 --output /results/serverless_eval.json
+volume: <bucket-or-filesystem>:/results:rw
