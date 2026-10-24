@@ -29,7 +29,7 @@ POLICIES = ("greedy", "static", "adaptive")
 POLICY_LABELS = {
     "greedy": "Baseline Greedy Navigation",
     "static": "Static Conservative A*",
-    "adaptive": "Nemotron + Cosmos Adaptive Policy",
+    "adaptive": "Nemotron Adaptive Policy",
 }
 _KEY_VARS = ("NEBIUS_API_KEY", "TAVILY_API_KEY")
 

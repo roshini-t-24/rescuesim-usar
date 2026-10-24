@@ -10,7 +10,7 @@
     "policy_labels": {
       "greedy": "Baseline Greedy Navigation",
       "static": "Static Conservative A*",
-      "adaptive": "Nemotron + Cosmos Adaptive Policy"
+      "adaptive": "Nemotron Adaptive Policy"
     },
     "seed_base": 1000,
     "paired_seeds": true,
