@@ -4,7 +4,10 @@ Multi-agent urban search-and-rescue simulator: a quadruped rover and a micro-dro
 
 Built for the Nebius x NVIDIA Global AI Hackathon 2026 (Physical AI track). License: Apache 2.0.
 
-![RescueSim command center: 3D collapse viewport, rover and drone paths, survivor beacons, live telemetry](docs/dashboard.png)
+| Offline planner (deterministic heuristic) | Live Nemotron on Nebius Token Factory |
+|---|---|
+| ![RescueSim dashboard, offline planner, seed 3, 5 of 5 survivors rescued](docs/dashboard_offline.png) | ![RescueSim dashboard, live Nemotron planner, seed 3, 5 of 5 survivors rescued](docs/dashboard_live.png) |
+| Seed 3: 5/5 rescued in 559 s, first survivor located at 26 s, 46.8 Wh per rescued survivor. Repeatable: the same seed gives the same result every run. | Seed 3, one run: 5/5 rescued in 339 s, first survivor located at 92 s, 30.1 Wh per rescued survivor. Live runs vary from run to run: earlier live runs on this seed ended 3/5 and 4/5, before a fix to how reflex-agent "decoy" verdicts are handled. |
 
 **Track:** Physical AI (software-only: all modules run in simulation). A quadruped rover and a micro-drone search a collapsed building for trapped survivors. Nemotron on Nebius Token Factory plans the rover's risk-aware routes and re-plans after aftershocks, a second Nemotron model rejects false heat signatures, and Tavily supplies live disaster data that changes the physics.
 
