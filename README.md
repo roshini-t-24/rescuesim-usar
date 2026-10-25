@@ -4,6 +4,22 @@ Multi-agent urban search-and-rescue simulator: a quadruped rover and a micro-dro
 
 Built for the Nebius x NVIDIA Global AI Hackathon 2026 (Physical AI track). License: Apache 2.0.
 
+![RescueSim command center: 3D collapse viewport, rover and drone paths, survivor beacons, live telemetry](docs/dashboard.png)
+
+**Track:** Physical AI (software-only: all modules run in simulation). A quadruped rover and a micro-drone search a collapsed building for trapped survivors. Nemotron on Nebius Token Factory plans the rover's risk-aware routes and re-plans after aftershocks, a second Nemotron model rejects false heat signatures, and Tavily supplies live disaster data that changes the physics.
+
+**Headline results** (100 paired episodes per policy, local run, offline planner; details below): the adaptive policy rescued 71.4% of survivors against 59.2% for greedy navigation (+12.2 points, Wilcoxon p = 0.0003) and lost robots in 20% of episodes against 30% (33% fewer, p = 0.033). The 60% loss-reduction goal was not reached.
+
+**Try it in two minutes** (no API keys needed):
+
+```bash
+git clone https://github.com/roshini-t-24/rescuesim-usar.git && cd rescuesim-usar
+pip install -r requirements.txt uvicorn[standard] python-dotenv
+python server.py   # open http://localhost:8000, press "Start mission"
+```
+
+In the dashboard, "Compare policies (this seed)" runs all three policies on one seed, and the benchmark tab shows the 100-episode results.
+
 ## Architecture
 
 ```
