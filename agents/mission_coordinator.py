@@ -182,6 +182,7 @@ class Track:
     skip_until: int = 0
     reflex_step: int = -10**9
     reflex_label: str = ""
+    reflex_hits: int = 0
     rejected: bool = False
     sid: int = -1
 
@@ -448,6 +449,7 @@ class MissionCoordinator:
             "y": tr.y,
         }
         tr.reflex_step = self.k
+        tr.reflex_hits = tr.acoustic_hits
         self.reflex_calls += 1
         try:
             verdict = self.orch.classify_anomaly(_clean(features))
@@ -468,6 +470,8 @@ class MissionCoordinator:
                 tr.label = "rescued"
                 continue
             conf = self._confidence(tr)
+            if tr.reflex_label == "decoy" and tr.acoustic_hits >= tr.reflex_hits + 2:
+                tr.reflex_label = ""
             if (
                 self.policy == "adaptive"
                 and tr.label == "uncertain"

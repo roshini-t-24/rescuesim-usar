@@ -15,6 +15,8 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
+if os.environ.get("RESCUESIM_NO_NEBIUS") == "1":
+    os.environ["NEBIUS_API_KEY"] = ""
 
 import numpy as np
 import uvicorn

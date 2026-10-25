@@ -121,7 +121,7 @@ Adaptive vs greedy: +12.2 rescue points (Wilcoxon p = 0.0003), robot-loss reduct
 - Route choice halves one-way trip risk but cannot remove the exposure of reaching survivors in unstable rubble.
 ## Live Nemotron run (exploratory)
 
-20 paired episodes per policy (seeds 1000-1019) with live Nebius calls: planner `nvidia/Nemotron-3-Ultra-550b-a55b`, reflex `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`. Source: `results/serverless_eval_live.json`.
+20 paired episodes per policy (seeds 1000-1019) with live Nebius calls: planner `nvidia/Nemotron-3-Ultra-550b-a55b`, reflex `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`. Source: `results/serverless_eval_live.json`. This run was made before a later fix that lets a reflex-agent "decoy" verdict expire when a contact gathers more acoustic evidence (the offline results are unchanged by that fix).
 
 | Policy | Rescue rate | Robot loss | Mean time to first survivor | Wh per rescued |
 |---|---|---|---|---|

@@ -382,7 +382,7 @@ $('#b-compare').onclick = async () => {
   try {
     const seed = +$('#c-seed').value;
     const r = await post('/api/compare', {seed, survivors: +$('#c-surv').value, use_live_hazards: $('#use-live').checked});
-    $('#cmp-sub').textContent = `seed ${r.seed}${r.used_live_hazards ? ' · Tavily hazards' : ''}`;
+    $('#cmp-sub').textContent = `seed ${r.seed} · offline planner${r.used_live_hazards ? ' · Tavily hazards' : ''}`;
     const rows = ['greedy', 'static', 'adaptive'].map(p => {
       const m = r.policies[p];
       if (!m || m.error) return [esc(CMP_LABEL[p]), `<span class='err'>${esc(m ? m.error : 'no result')}</span>`, '', '', '', ''];
