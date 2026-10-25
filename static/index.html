@@ -30,31 +30,43 @@
 
 <!-- TAB 1 -->
 <section id="t1" class="panel active">
-  <div class="controls">
-    <label>Policy
-      <select id="c-policy">
-        <option value="adaptive">Nemotron Adaptive</option>
-        <option value="static">Static Conservative A*</option>
-        <option value="greedy">Baseline Greedy</option>
-      </select>
-    </label>
-    <label>Seed <input id="c-seed" type="number" value="3" min="0" max="99999"></label>
-    <label>Survivors <input id="c-surv" type="number" value="5" min="1" max="8"></label>
-    <label class="chk"><input id="use-live" type="checkbox" disabled> Use Tavily hazards</label>
-    <button id="b-start" class="primary">▶ Start mission</button>
-    <button id="b-pause">⏸ Pause</button>
-    <button id="b-stop">■ Stop</button>
-    <label>Speed
-      <select id="c-speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select>
-    </label>
-    <label>Aftershock M <input id="c-mag" type="range" min="3" max="7" step="0.1" value="5.5"><b id="c-mag-v">5.5</b></label>
-    <button id="b-quake" class="danger">⚡ Trigger aftershock</button>
-    <button id="b-compare">⚖ Compare policies (this seed)</button>
-    <label class="chk"><input id="c-truth" type="checkbox" checked> Ground truth</label>
+  <div class="ctl-bar">
+    <div class="grp controls"><h4>1 &middot; Setup</h4>
+      <label>Policy
+        <select id="c-policy">
+          <option value="adaptive">Nemotron Adaptive</option>
+          <option value="static">Static Conservative A*</option>
+          <option value="greedy">Baseline Greedy</option>
+        </select>
+      </label>
+      <label>Seed <input id="c-seed" type="number" value="3" min="0" max="99999"></label>
+      <label>Survivors <input id="c-surv" type="number" value="5" min="1" max="8"></label>
+      <label class="chk"><input id="use-live" type="checkbox" disabled> Use Tavily hazards</label>
+    </div>
+    <div class="grp controls"><h4>2 &middot; Run</h4>
+      <button id="b-start" class="primary">▶ Start mission</button>
+      <button id="b-pause">⏸ Pause</button>
+      <button id="b-stop">■ Stop</button>
+      <label>Speed
+        <select id="c-speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select>
+      </label>
+      <span class="status" id="run-status">Idle</span>
+    </div>
+    <p class="intro side-intro">A rover and a micro-drone search a collapsed building for survivors. Start a mission, then trigger an aftershock (top right of the 3D view) to force a re-route.</p>
+  </div>
+  <div class="chips small">
+    <span><i class="dot" style="background:#ff9f1c"></i>Rover path</span>
+    <span><i class="dot" style="background:#4cc9f0"></i>Drone path + LiDAR ring</span>
+    <span><i class="dot" style="background:#ff3b3b"></i>Confirmed survivor</span>
+    <span><i class="dot" style="background:#ffb020"></i>Uncertain contact</span>
+    <span><i class="dot" style="background:#7d8590"></i>Rejected decoy</span>
+    <span><i class="dot" style="background:#3ddc84"></i>Rescued</span>
+    <span><i class="grad"></i>Terrain: stable &rarr; collapse-prone</span>
+    <span><i class="dot" style="background:#b8bec8"></i>Smoke</span>
   </div>
 
   <div class="grid1">
-    <div class="card viewport"><div id="plot"></div></div>
+    <div class="card viewport"><div id="plot"></div><div class="vp-tools"><label class="chk"><input id="c-truth" type="checkbox" checked> Show ground-truth survivors</label></div><div class="vp-tools right"><label>Aftershock magnitude <span class="rng"><input id="c-mag" type="range" min="3" max="7" step="0.1" value="5.5"><b id="c-mag-v">5.5</b></span></label><button id="b-quake" class="danger">⚡ Trigger aftershock</button><button id="b-compare">⚖ Compare policies (this seed)</button></div><div id="empty-state" class="empty"><b>No mission running</b><span>Press <em>Start mission</em> to deploy the rover and drone</span></div></div>
     <div class="side">
       <div class="card">
         <h3>Mission telemetry <small id="k-clock">t=0.0s step 0</small></h3>
@@ -70,11 +82,11 @@
         <div class="bat"><span>Drone battery</span><div class="bar"><i id="bat-d"></i></div><b id="bat-d-v">100%</b></div>
       </div>
       <div class="card">
-        <h3>Active A* policy weights</h3>
+        <h3>Route-risk weights from the planner</h3>
         <div class="weights">
-          <div><span>&alpha; slope</span><b id="w-alpha">-</b></div>
-          <div><span>&beta; collapse</span><b id="w-beta">-</b></div>
-          <div><span>&gamma; smoke</span><b id="w-gamma">-</b></div>
+          <div title="How strongly routes avoid steep rubble"><span>Slope caution (&alpha;)</span><b id="w-alpha">-</b></div>
+          <div title="How strongly routes avoid areas likely to collapse"><span>Collapse caution (&beta;)</span><b id="w-beta">-</b></div>
+          <div title="How strongly routes avoid dense smoke"><span>Smoke caution (&gamma;)</span><b id="w-gamma">-</b></div>
         </div>
         <div id="plan-box" class="small muted">No plan yet.</div>
       </div>
@@ -88,11 +100,6 @@
         <div id="final-box" class="small"></div>
       </div>
     </div>
-  </div>
-  <div class="legend small muted">
-    Terrain colour = structural instability (green stable → red collapse-prone) · grey haze = smoke ·
-    cyan = micro-drone path + LiDAR ring · orange = rover path · red pulsing = confirmed survivor beacon ·
-    amber = uncertain contact · grey = rejected decoy · green = rescued
   </div>
 </section>
 

@@ -17,7 +17,8 @@ const post = (p, b) => api(p, {method: 'POST', headers: {'Content-Type': 'applic
 /* ------------------------------------------------------------------ header */
 function setPill(id, text, cls) {
   const el = $('#' + id);
-  el.textContent = text;
+  el.textContent = text.replace(/\s*\(.*$/, '');
+  el.title = text;
   el.className = 'pill ' + cls;
 }
 const modeClass = s => (String(s).toUpperCase().includes('OFFLINE') ? 'off' : 'ok');
@@ -195,7 +196,7 @@ function connect() {
 function handle(m) {
   if (m.type === 'init') {
     seenLog = new Set(); $('#log').innerHTML = ''; $('#final-card').classList.add('hidden');
-    initPlot(m.world);
+    initPlot(m.world); $('#empty-state').classList.add('hidden'); setStatus('Running', 'run');
     setPill('pill-nebius', 'Nebius: ' + m.mode.nebius, modeClass(m.mode.nebius));
     setPill('pill-tavily', 'Tavily: ' + m.mode.tavily, modeClass(m.mode.tavily));
     addLog({t: 0, src: 'ui', msg: `hazards: aftershock p=${fmt(m.hazards.seismic_aftershock_prob, 2)} wind=${fmt(m.hazards.wind_turbulence_mps, 1)} m/s ambient=${fmt(m.hazards.ambient_temp_c, 1)}C toxicity=${fmt(m.hazards.smoke_toxicity_index, 2)} FEMA margin=${fmt(m.hazards.fema_safety_margin_m, 1)}m`});
@@ -207,7 +208,7 @@ function handle(m) {
     if (m.quake) addLog({t: m.t, src: 'world', msg: `aftershock injected M${fmt(m.quake.magnitude, 1)}; corridors re-planned`});
     updateFrame(m);
   } else if (m.type === 'done') {
-    renderFinal(m.metrics);
+    renderFinal(m.metrics); setStatus('Mission complete', 'done');
     $('#b-start').textContent = '▶ Start mission';
   } else if (m.type === 'error') {
     addLog({t: 0, src: 'ui', msg: 'ERROR ' + m.message});
@@ -398,3 +399,14 @@ $('#b-compare').onclick = async () => {
     btn.textContent = '⚖ Compare policies (this seed)';
   }
 };
+
+
+/* ------------------------------------------------------------ status chip */
+function setStatus(text, cls) {
+  const el = $('#run-status');
+  el.textContent = text;
+  el.className = 'status' + (cls ? ' ' + cls : '');
+}
+$('#b-start').addEventListener('click', () => setStatus('Starting...', 'run'));
+$('#b-pause').addEventListener('click', () => setStatus(paused ? 'Paused' : 'Running', paused ? '' : 'run'));
+$('#b-stop').addEventListener('click', () => { setStatus('Stopped', ''); $('#empty-state').classList.remove('hidden'); });
