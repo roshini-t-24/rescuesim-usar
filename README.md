@@ -8,13 +8,17 @@ Built for the Nebius x NVIDIA Global AI Hackathon 2026 (Physical AI track). Lice
 
 **Track:** Physical AI (software-only: all modules run in simulation). A quadruped rover and a micro-drone search a collapsed building for trapped survivors. Nemotron on Nebius Token Factory plans the rover's risk-aware routes and re-plans after aftershocks, a second Nemotron model rejects false heat signatures, and Tavily supplies live disaster data that changes the physics.
 
+**Why it matters and what this is not:** rescuers entering a collapsed structure face the risk of secondary collapse, so sending robots in first to find survivors and safe routes is a natural use of autonomy. This project is a simulation testbed for comparing route-planning and decision policies before any hardware is involved. It has not been validated against real robots or real collapse sites, and its numbers describe the simulator only.
+
+**Note on live mode:** with API keys set, the Nemotron reasoning models take several seconds per call (about 11 s for a reflex call), so a live mission runs slower than the offline one. Leave the keys out for a fast demo.
+
 **Headline results** (100 paired episodes per policy, local run, offline planner; details below): the adaptive policy rescued 71.4% of survivors against 59.2% for greedy navigation (+12.2 points, Wilcoxon p = 0.0003) and lost robots in 20% of episodes against 30% (33% fewer, p = 0.033). The 60% loss-reduction goal was not reached.
 
 **Try it in two minutes** (no API keys needed):
 
 ```bash
 git clone https://github.com/roshini-t-24/rescuesim-usar.git && cd rescuesim-usar
-pip install -r requirements.txt uvicorn[standard] python-dotenv
+pip install -r requirements.txt "uvicorn[standard]" python-dotenv
 python server.py   # open http://localhost:8000, press "Start mission"
 ```
 
