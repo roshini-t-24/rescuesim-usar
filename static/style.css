@@ -44,7 +44,7 @@ button.danger{background:#3a1519;border-color:var(--red);color:#ffb3b3}
 .log{flex:1;overflow-y:auto;max-height:300px;font:12px/1.4 ui-monospace,Consolas,monospace;background:#0b0f14;border:1px solid var(--line);border-radius:6px;padding:6px}
 .log div{padding:1px 0;border-bottom:1px dotted #1b222c}
 .log .t{color:var(--muted)}
-.src-planner{color:var(--orange)}.src-reflex{color:#c792ea}.src-rover{color:#ff9f1c}.src-drone{color:var(--cyan)}.src-world{color:var(--red)}.src-coordinator{color:var(--green)}.src-ui{color:var(--amber)}
+.src-planner{color:var(--orange)}.src-reflex{color:#c792ea}.src-rover{color:#ff2bd6}.src-drone{color:var(--cyan)}.src-world{color:var(--red)}.src-coordinator{color:var(--green)}.src-ui{color:var(--amber)}
 .small{font-size:12px}.muted{color:var(--muted)}.hidden{display:none}
 .legend{margin-top:4px}
 table{border-collapse:collapse;width:100%;font-size:13px}
